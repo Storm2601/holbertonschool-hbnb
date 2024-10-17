@@ -71,5 +71,5 @@ class InMemoryRepository(Repository):
 
     def get_by_attribute(self, attr_name, attr_value):
         """Get an object by a specific attribute."""
-        return next((obj for obj in self._storage.values() 
+        return next((obj for obj in self._storage.values()
                      if getattr(obj, attr_name) == attr_value), None)

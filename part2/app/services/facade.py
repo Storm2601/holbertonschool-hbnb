@@ -1,26 +1,28 @@
 #!/usr/bin/python3
 
-"""Facade pattern for the HBnB application."""
+"""Facade for managing user operations."""
 
-from app.persistence.repository import InMemoryRepository
+from app.models.user import User
+from part2.app.persistence.repository import InMemoryRepository
 
 
 class HBnBFacade:
-    """Facade for managing interactions between layers."""
+    """Facade class to manage user operations."""
 
     def __init__(self):
-        """Initialize repositories for users, places, reviews, and amenities."""
+        """Initialize the facade with the user repository."""
         self.user_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
 
-    # Placeholder method for creating a user
     def create_user(self, user_data):
-        """Create a user from provided data."""
-        pass
+        """Create a new user and add it to the repository."""
+        user = User(**user_data)
+        self.user_repo.add(user)
+        return user
 
-    # Placeholder method for fetching a place by ID
-    def get_place(self, place_id):
-        """Fetch a place by its ID."""
-        pass
+    def get_user(self, user_id):
+        """Retrieve a user by ID from the repository."""
+        return self.user_repo.get(user_id)
+
+    def get_user_by_email(self, email):
+        """Retrieve a user by email from the repository."""
+        return self.user_repo.get_by_attribute('email', email)
