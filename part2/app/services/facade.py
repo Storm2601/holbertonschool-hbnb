@@ -3,7 +3,7 @@
 """Facade for managing user operations."""
 
 from app.models.user import User
-from part2.app.persistence.repository import InMemoryRepository
+from app.persistence.repository import InMemoryRepository
 
 
 class HBnBFacade:
@@ -12,6 +12,9 @@ class HBnBFacade:
     def __init__(self):
         """Initialize the facade with the user repository."""
         self.user_repo = InMemoryRepository()
+        self.place_repo = InMemoryRepository()
+        self.review_repo = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
 
     def create_user(self, user_data):
         """Create a new user and add it to the repository."""
