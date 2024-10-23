@@ -5,7 +5,9 @@ import uuid
 # Importing datetime for timestamps
 from datetime import datetime
 # Importing User class from user module
-from user import BaseModel, User
+from user import User
+# Importing base_model class from Basemodel module
+from .base_model import BaseModel
 # Importing Place class from place module
 from place import Place
 

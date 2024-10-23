@@ -29,3 +29,11 @@ class HBnBFacade:
     def get_user_by_email(self, email):
         """Retrieve a user by email from the repository."""
         return self.user_repo.get_by_attribute('email', email)
+
+    def update_user(self, user_id, user_data):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return None  # User not found
+        for key, value in user_data.items():
+            setattr(user, key, value)  # Update user attributes
+        return user
