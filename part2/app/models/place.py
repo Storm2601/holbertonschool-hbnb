@@ -7,28 +7,42 @@ from .base_model import BaseModel
 class Place(BaseModel):
     """Class representing a place in the system"""
 
-    def __init__(self, name, description, city, price_per_night):
-        """Initialize a Place instance with name, description, and city"""
+    def __init__(self, name, description, city, price_per_night, latitude, longitude, owner_id, amenities):
+        """Initialize a Place instance with name, description, city, and additional attributes"""
         super().__init__()
-        # Place name
         self.name = name
-        # Place description
         self.description = description
-        # City where the place is located
         self.city = city
-        # Price per night for the place
         self.price_per_night = price_per_night
-        # Validate all fields on creation
+        self.latitude = latitude
+        self.longitude = longitude
+        self.owner_id = owner_id
+        self.amenities = amenities
         self.validate_fields()
 
     def validate_fields(self):
         """Validate that fields meet the required constraints"""
-        # Ensure name and city are not empty
         if not self.name or not self.city:
             raise ValueError("Name and city are required")
-        # Ensure description is not empty
         if not self.description:
             raise ValueError("Description is required")
-        # Ensure price_per_night is a non-negative integer
-        if not isinstance(self.price_per_night, int) or self.price_per_night < 0:
-            raise ValueError("Price per night must be a non-negative integer")
+        if not isinstance(self.price_per_night, (int, float)) or self.price_per_night < 0:
+            raise ValueError("Price per night must be a non-negative float")
+        if not (-90 <= self.latitude <= 90):
+            raise ValueError("Latitude must be between -90 and 90")
+        if not (-180 <= self.longitude <= 180):
+            raise ValueError("Longitude must be between -180 and 180")
+
+    def to_dict(self):
+        """Convert Place instance to dictionary format"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'city': self.city,
+            'price_per_night': self.price_per_night,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'owner_id': self.owner_id,
+            'amenities': self.amenities
+        }
