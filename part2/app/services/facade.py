@@ -3,6 +3,7 @@
 """Facade for managing user operations."""
 
 from app.models.user import User
+from app.models.place import Place  # Importer la classe Place
 from app.persistence.repository import InMemoryRepository
 
 
@@ -37,3 +38,26 @@ class HBnBFacade:
         for key, value in user_data.items():
             setattr(user, key, value)  # Update user attributes
         return user
+
+    def create_place(self, place_data): 
+        """Create a new place and add it to the repository."""
+        place = Place(**place_data)
+        self.place_repo.add(place)
+        return place
+
+    def get_place(self, place_id):
+        """Retrieve a place by ID from the repository."""
+        return self.place_repo.get(place_id)
+
+    def get_all_places(self):
+        """Retrieve all places from the repository."""
+        return self.place_repo.get_all()
+
+    def update_place(self, place_id, place_data):
+        """Update a place's information."""
+        place = self.place_repo.get(place_id)
+        if not place:
+            return None  # Place not found
+        for key, value in place_data.items():
+            setattr(place, key, value)  # Update place attributes
+        return place
