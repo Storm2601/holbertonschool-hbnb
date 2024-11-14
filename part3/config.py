@@ -33,3 +33,4 @@ config = {
     'default': DevelopmentConfig
 }
 
+test
