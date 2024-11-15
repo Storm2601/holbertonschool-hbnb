@@ -13,7 +13,8 @@ api = Namespace('reviews', description='Review operations')
 review_model = api.model('Review', {
     'place_id': fields.Integer(required=True, description='ID of the place being reviewed'),
     'text': fields.String(required=True, description='Review text'),
-    'rating': fields.Integer(required=True, description='Rating for the place', min=1, max=5)
+    'rating': fields.Integer(required=True, description='Rating for the place', min=1, max=5),
+    'jwt_token': fields.String(required=True, description='JWT token for authentication')
 })
 
 # Facade to interact with data
@@ -90,7 +91,6 @@ class ReviewResource(Resource):
 
         # Update the review
         updated_review = facade.update_review(review_id, review_data)
-
         return {
             'id': updated_review.id,
             'place_id': updated_review.place_id,
@@ -116,5 +116,4 @@ class ReviewResource(Resource):
 
         # Delete the review
         facade.delete_review(review_id)
-
-        return {'message': 'Review deleted successfully'}, 200
+        return {'message': 'Review successfully deleted'}, 200
