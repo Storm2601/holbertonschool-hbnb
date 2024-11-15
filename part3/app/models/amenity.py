@@ -1,20 +1,25 @@
 #!/usr/bin/python3
 
-# Importing the BaseModel class
+# Importing the Base and BaseModel classes
 from .base_model import BaseModel
+from sqlalchemy import Column, String, Text
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
 
-class Amenity(BaseModel):
+class Amenity(Base, BaseModel):
     """Class representing an amenity in the system"""
+    __tablename__ = 'amenities'
+
+    id = Column(String(60), primary_key=True)
+    name = Column(String(50), nullable=False)
+    description = Column(Text, nullable=True)
 
     def __init__(self, name, description=None):
         """Initialize an Amenity instance with name and an optional description"""
         super().__init__()
-        # Amenity name
         self.name = name
-        # Optional description of the amenity
         self.description = description
-        # Validate all fields on creation
         self.validate_fields()
 
     def validate_fields(self):

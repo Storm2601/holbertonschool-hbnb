@@ -1,15 +1,26 @@
 #!/usr/bin/python3
 
-# Importing the BaseModel class
-from .base_model import BaseModel
+from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
 
-class Place(BaseModel):
+class Place(Base):
     """Class representing a place in the system"""
+    __tablename__ = 'places'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(128), nullable=False)
+    description = Column(String(1024), nullable=False)
+    city = Column(String(128), nullable=False)
+    price_per_night = Column(Float, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    amenities = Column(String(1024), nullable=True)
 
     def __init__(self, name, description, city, price_per_night, latitude, longitude, owner_id, amenities):
         """Initialize a Place instance with name, description, city, and additional attributes"""
-        super().__init__()
         self.name = name
         self.description = description
         self.city = city

@@ -4,30 +4,35 @@
 import uuid
 # Importing datetime for timestamps
 from datetime import datetime
-# Importing User class from user module
-from user import User
-# Importing base_model class from Basemodel module
-from .base_model import BaseModel
-# Importing Place class from place module
-from place import Place
+# Importing SQLAlchemy components
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
 
-class Review(BaseModel):
+class Review(Base):
     """Class representing a review of a place"""
+    __tablename__ = 'reviews'
+
+    id = Column(String(60), primary_key=True, default=lambda: str(uuid.uuid4()))
+    text = Column(String(500), nullable=False)
+    rating = Column(Integer, nullable=False)
+    place_id = Column(String(60), ForeignKey('places.id'), nullable=False)
+    user_id = Column(String(60), ForeignKey('users.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    place = relationship("Place", back_populates="reviews")
+    user = relationship("User", back_populates="reviews")
 
     def __init__(self, text, rating, place, user):
         """Initialize a Review instance with text, rating, 
         place, and user"""
-        super().__init__()
-        # Review text content
         self.text = text
-        # Rating score
         self.rating = rating
-        # Place being reviewed
         self.place = place
-        # User who wrote the review
         self.user = user
-        # Validate all fields on creation
         self.validate_fields()
 
     def validate_fields(self):
@@ -53,5 +58,4 @@ class Review(BaseModel):
         """Check if the user has already reviewed the place"""
         return all(
             review.user != user or review.place != place
-            for review in reviews
-        )
+            for review in reviews)
