@@ -4,15 +4,17 @@
 from .base_model import BaseModel
 # Regular expression module for email validation
 import re
+from flask_bcrypt import Bcrypt
 
+bcrypt = Bcrypt()
 
 class User(BaseModel):
     """Class representing a user in the system"""
 
     users = []  # Class variable to keep track of all users
 
-    def __init__(self, first_name, last_name, email, is_admin=False):
-        """Initialize a User instance with name and email"""
+    def __init__(self, first_name, last_name, email, password=None, is_admin=False):
+        """Initialize a User instance with name, email, and password"""
         super().__init__()
         # User's first name
         self.first_name = first_name
@@ -20,10 +22,15 @@ class User(BaseModel):
         self.last_name = last_name
         # User's email address
         self.email = email
+        # User's password (hashed)
+        self.password = None  # Initially, no password
         # Indicates if the user has admin privileges
         self.is_admin = is_admin
         # Validate all fields on creation
         self.validate_fields()
+        # If a password is provided, hash it
+        if password:
+            self.hash_password(password)
         # Add the user to the class list
         User.users.append(self)
 
@@ -69,3 +76,11 @@ class User(BaseModel):
             print(f"User {self.first_name} {self.last_name} has been deleted.")
         except ValueError:
             print("User not found.")
+
+    def hash_password(self, password):
+        """Hashes the password before storing it."""
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def verify_password(self, password):
+        """Verifies if the provided password matches the hashed password."""
+        return bcrypt.check_password_hash(self.password, password)

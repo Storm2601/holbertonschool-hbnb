@@ -13,7 +13,6 @@ def create_app(config_class="config.DevelopmentConfig"):
 
     # Configure the app using the provided config class
     app.config.from_object(config_class)
-
     # Initialize bcrypt
     bcrypt.init_app(app)
 
