@@ -3,6 +3,7 @@
 """User endpoints for the HBnB API."""
 
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.services.facade import HBnBFacade
 from app.models.user import User
 from flask_bcrypt import Bcrypt
@@ -19,6 +20,7 @@ user_model = api.model('User', {
     'password': fields.String(required=True, description='Password for the user')
 })
 
+# Facade to interact with data
 facade = HBnBFacade()
 
 @api.route('/')
@@ -52,6 +54,30 @@ class UserList(Resource):
         }, 201
 
 
+@api.route('/login')
+class UserLogin(Resource):
+    @api.expect(user_model, validate=True)
+    @api.response(200, 'User logged in successfully')
+    @api.response(401, 'Invalid credentials')
+    def post(self):
+        """Login a user and return a JWT token"""
+        user_data = api.payload
+
+        # Chercher l'utilisateur dans la base de données par email
+        user = facade.get_user_by_email(user_data['email'])
+        if not user:
+            return {'error': 'Invalid credentials'}, 401
+
+        # Vérifier le mot de passe
+        if not bcrypt.check_password_hash(user.password, user_data['password']):
+            return {'error': 'Invalid credentials'}, 401
+
+        # Créer un jeton JWT pour l'utilisateur
+        access_token = create_access_token(identity=user.id)
+        
+        return {'access_token': access_token}, 200
+
+
 @api.route('/<user_id>')
 class UserResource(Resource):
     @api.response(200, 'User details retrieved successfully')
@@ -72,8 +98,14 @@ class UserResource(Resource):
     @api.response(200, 'User successfully updated')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'You are not authorized to update this user')
+    @jwt_required()  # Sécuriser cet endpoint avec JWT
     def put(self, user_id):
         """Update user details by ID"""
+        current_user_id = get_jwt_identity()  # Récupérer l'identité de l'utilisateur à partir du jeton
+        if current_user_id != user_id:
+            return {'error': 'You are not authorized to update this user'}, 403
+
         user_data = api.payload
         updated_user = facade.update_user(user_id, user_data)
 
@@ -86,3 +118,20 @@ class UserResource(Resource):
             'last_name': updated_user.last_name,
             'email': updated_user.email
         }, 200
+
+    @api.response(200, 'User successfully deleted')
+    @api.response(404, 'User not found')
+    @api.response(403, 'You are not authorized to delete this user')
+    @jwt_required()  # Sécuriser cet endpoint avec JWT
+    def delete(self, user_id):
+        """Delete user by ID"""
+        current_user_id = get_jwt_identity()  # Récupérer l'identité de l'utilisateur à partir du jeton
+        if current_user_id != user_id:
+            return {'error': 'You are not authorized to delete this user'}, 403
+
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        facade.delete_user(user_id)
+        return {'message': 'User deleted successfully'}, 200
