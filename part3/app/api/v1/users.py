@@ -23,6 +23,10 @@ user_model = api.model('User', {
 # Facade to interact with data
 facade = HBnBFacade()
 
+# Initialize Flask-JWT-Extended
+# app.config['JWT_SECRET_KEY'] = 'votre_clé_secrète'  # Utilisez une clé secrète sécurisée pour la production
+# jwt = JWTManager(app)
+
 @api.route('/')
 class UserList(Resource):
     @api.expect(user_model, validate=True)
@@ -33,10 +37,9 @@ class UserList(Resource):
         """Register a new user"""
         user_data = api.payload
 
-        # Simulate email uniqueness check (to be replaced by real validation with persistence)
-        existing_user = facade.get_user_by_email(user_data['email'])
-        if existing_user:
-            return {'error': 'Email already registered'}, 400
+        # Validate the email uniqueness using the User model method
+        if not User.is_unique_email(user_data['email']):
+            return {'error': 'Email is already taken, please choose another one'}, 400
 
         # Hash the password before creating the user
         password_hash = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')

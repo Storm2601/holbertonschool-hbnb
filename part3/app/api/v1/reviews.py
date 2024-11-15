@@ -5,7 +5,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.facade import HBnBFacade
-from app.models.review import Review
 
 api = Namespace('reviews', description='Review operations')
 
@@ -14,7 +13,6 @@ review_model = api.model('Review', {
     'place_id': fields.Integer(required=True, description='ID of the place being reviewed'),
     'text': fields.String(required=True, description='Review text'),
     'rating': fields.Integer(required=True, description='Rating for the place', min=1, max=5),
-    'jwt_token': fields.String(required=True, description='JWT token for authentication')
 })
 
 # Facade to interact with data

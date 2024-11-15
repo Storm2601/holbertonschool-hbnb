@@ -2,13 +2,10 @@
 
 """Amenity endpoints for the HBnB API."""
 
-from flask_restx import Namespace # type: ignore
+from flask_restx import Namespace, Resource, fields
+from app.services.facade import HBnBFacade
 
 api = Namespace('amenities', description='Amenity operations')
-
-# Placeholder for future operations (POST, GET, PUT)
-
-from flask_restx import fields # type: ignore
 
 # Define the amenity model for input validation and documentation
 amenity_model = api.model('Amenity', {
@@ -16,9 +13,7 @@ amenity_model = api.model('Amenity', {
     'description': fields.String(required=False, description='Description of the amenity')
 })
 
-from flask_restx import Resource # type: ignore
-from app.services.facade import HBnBFacade
-
+# Facade to interact with data
 facade = HBnBFacade()
 
 @api.route('/')
@@ -26,15 +21,17 @@ class AmenityList(Resource):
     @api.expect(amenity_model, validate=True)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Amenity already exists')
+    @api.response(400, 'Invalid input data')
     def post(self):
         """Create a new amenity"""
         amenity_data = api.payload
 
-        # Simulate uniqueness check for amenity name (to be replaced with persistence validation)
+        # Check if amenity name is unique
         existing_amenity = facade.get_amenity_by_name(amenity_data['name'])
         if existing_amenity:
             return {'error': 'Amenity already exists'}, 400
 
+        # Create the amenity
         new_amenity = facade.create_amenity(amenity_data)
         return {
             'id': new_amenity.id,
@@ -50,6 +47,7 @@ class AmenityList(Resource):
             {'id': a.id, 'name': a.name, 'description': a.description} 
             for a in amenities 
         ], 200
+
 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
@@ -83,3 +81,14 @@ class AmenityResource(Resource):
             'name': updated_amenity.name,
             'description': updated_amenity.description
         }, 200
+
+    @api.response(200, 'Amenity successfully deleted')
+    @api.response(404, 'Amenity not found')
+    def delete(self, amenity_id):
+        """Delete an amenity by ID"""
+        amenity = facade.get_amenity(amenity_id)
+        if not amenity:
+            return {'error': 'Amenity not found'}, 404
+
+        facade.delete_amenity(amenity_id)  # Call to delete the amenity
+        return {'message': 'Amenity successfully deleted'}, 200

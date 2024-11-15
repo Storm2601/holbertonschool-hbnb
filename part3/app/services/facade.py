@@ -4,6 +4,8 @@
 
 from app.models.user import User
 from app.models.place import Place  # Importer la classe Place
+from app.models.amenity import Amenity
+from app.models.review import Review
 from app.persistence.repository import InMemoryRepository
 
 
@@ -32,11 +34,12 @@ class HBnBFacade:
         return self.user_repo.get_by_attribute('email', email)
 
     def update_user(self, user_id, user_data):
+        """Update a user's details by ID."""
         user = self.user_repo.get(user_id)
         if not user:
-            return None  # User not found
+            return None  # Return None if the user is not found
         for key, value in user_data.items():
-            setattr(user, key, value)  # Update user attributes
+            setattr(user, key, value)  # Update the user attributes dynamically
         return user
 
     def create_place(self, place_data): 
@@ -61,3 +64,45 @@ class HBnBFacade:
         for key, value in place_data.items():
             setattr(place, key, value)  # Update place attributes
         return place
+
+    def delete_place(self, place_id):
+        """Delete a place from the system"""
+        place = self.get_place(place_id)
+        if place:
+            self.place_repo.remove(place)
+            return True
+        return False
+
+    def get_amenity_by_name(self, name):
+        """Fetch an amenity by its name."""
+        return next((amenity for amenity in Amenity.amenities if amenity.name == name), None)
+
+    def create_amenity(self, amenity_data):
+        """Create a new amenity in the system."""
+        new_amenity = Amenity(name=amenity_data['name'], description=amenity_data.get('description'))
+        return new_amenity
+
+    def get_all_amenities(self):
+        """Retrieve all amenities."""
+        return Amenity.amenities
+
+    def get_amenity(self, amenity_id):
+        """Retrieve an amenity by its ID."""
+        return Amenity.find_by_id(amenity_id)
+
+    def update_amenity(self, amenity_id, amenity_data):
+        """Update the amenity's information."""
+        amenity = self.get_amenity(amenity_id)
+        if not amenity:
+            return None
+        amenity.name = amenity_data.get('name', amenity.name)
+        amenity.description = amenity_data.get('description', amenity.description)
+        return amenity
+
+    def delete_amenity(self, amenity_id):
+        """Delete an amenity from the system."""
+        amenity = self.get_amenity(amenity_id)
+        if amenity:
+            Amenity.amenities.remove(amenity)
+            return True
+        return False
