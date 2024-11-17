@@ -18,26 +18,6 @@ amenity_model = api.model('Amenity', {
 # Facade to interact with data
 facade = HBnBFacade()
 
-# Route for login (for JWT token creation)
-@api.route('/login')
-class Login(Resource):
-    @api.expect(amenity_model, validate=False)
-    @api.response(200, 'Login successful')
-    @api.response(401, 'Invalid credentials')
-    def post(self):
-        """Login and return JWT token"""
-        # For this example, we're assuming a static username/password, but you should use your own logic.
-        username = api.payload.get('username')
-        password = api.payload.get('password')
-
-        # Here you can check the credentials (in a real app, check against a DB)
-        if username == "admin" and password == "password":  # A simple example
-            # Create JWT token valid for 1 hour
-            access_token = create_access_token(identity=username, expires_delta=timedelta(hours=1))
-            return {'access_token': access_token}, 200
-        else:
-            return {'error': 'Invalid credentials'}, 401
-
 @api.route('/')
 class AmenityList(Resource):
     @jwt_required()  # Protect this route with JWT authentication
