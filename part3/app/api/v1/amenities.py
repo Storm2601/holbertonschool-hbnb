@@ -3,7 +3,9 @@
 """Amenity endpoints for the HBnB API."""
 
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from app.services.facade import HBnBFacade
+from datetime import timedelta
 
 api = Namespace('amenities', description='Amenity operations')
 
@@ -16,8 +18,29 @@ amenity_model = api.model('Amenity', {
 # Facade to interact with data
 facade = HBnBFacade()
 
+# Route for login (for JWT token creation)
+@api.route('/login')
+class Login(Resource):
+    @api.expect(amenity_model, validate=False)
+    @api.response(200, 'Login successful')
+    @api.response(401, 'Invalid credentials')
+    def post(self):
+        """Login and return JWT token"""
+        # For this example, we're assuming a static username/password, but you should use your own logic.
+        username = api.payload.get('username')
+        password = api.payload.get('password')
+
+        # Here you can check the credentials (in a real app, check against a DB)
+        if username == "admin" and password == "password":  # A simple example
+            # Create JWT token valid for 1 hour
+            access_token = create_access_token(identity=username, expires_delta=timedelta(hours=1))
+            return {'access_token': access_token}, 200
+        else:
+            return {'error': 'Invalid credentials'}, 401
+
 @api.route('/')
 class AmenityList(Resource):
+    @jwt_required()  # Protect this route with JWT authentication
     @api.expect(amenity_model, validate=True)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Amenity already exists')
@@ -51,6 +74,7 @@ class AmenityList(Resource):
 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
+    @jwt_required()  # Protect this route with JWT authentication
     @api.response(200, 'Amenity details retrieved successfully')
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
@@ -64,6 +88,7 @@ class AmenityResource(Resource):
             'description': amenity.description
         }, 200
 
+    @jwt_required()  # Protect this route with JWT authentication
     @api.expect(amenity_model, validate=True)
     @api.response(200, 'Amenity successfully updated')
     @api.response(404, 'Amenity not found')
@@ -82,6 +107,7 @@ class AmenityResource(Resource):
             'description': updated_amenity.description
         }, 200
 
+    @jwt_required()  # Protect this route with JWT authentication
     @api.response(200, 'Amenity successfully deleted')
     @api.response(404, 'Amenity not found')
     def delete(self, amenity_id):
